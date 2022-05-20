@@ -158,7 +158,7 @@ int main(void)
     min_poll(&min_ctx, (uint8_t *)buf, (uint8_t)buf_len);
 #else
     // VCP demonstration - Echo all data received over VCP  back to the host
-    int len = l_circus_vcp_recv(buf, MAIN_BUF_SIZE);  // Read up to 1000 bytes
+    int len = l_circus_vcp_recv(buf, MAIN_BUF_SIZE);  // Read up to MAIN_BUF_SIZE bytes
     if (len > 0)    // If some data was read, send it back :
       len = l_circus_vcp_send(buf, len);
 #endif
