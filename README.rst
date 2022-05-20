@@ -1,6 +1,8 @@
 MIN Echo
 ********
 
+- `MIN protocol <https://github.com/min-protocol/min>`__
+
 **MIN protocol demo. STM32F103C8T6, STM32CubeIDE, USB VCP**
 
 This is essentially a Blinky with USB Virtual COM Port, echoing everything back.
