@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "min.h"
+#include "circus.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,6 +33,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MAIN_BUF_SIZE 1000
+#define SMALL_BUF_SIZE 32
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,11 +52,55 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
-
+void initialise_monitor_handles(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+#ifndef NO_MIN
+/* MIN callbacks: */
+
+// Tell MIN how much space there is to write to the serial port. This is used
+// inside MIN to decide whether to bother sending a frame or not.
+uint16_t min_tx_space(uint8_t _port)
+{
+  uint16_t n = l_circus_vcp_send_available();
+  return n;
+}
+
+// Send a character on the designated port.
+void min_tx_byte(uint8_t _port, uint8_t byte)
+{
+  l_circus_vcp_send(&byte, 1U);
+}
+
+// Tell MIN the current time in milliseconds.
+uint32_t min_time_ms(void)
+{
+  return HAL_GetTick();
+}
+
+void min_application_handler(uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
+{
+  // In this simple example application we just echo the frame back when we get one
+  bool result = min_queue_frame(&min_ctx, min_id, min_payload, len_payload);
+  if(!result) {
+    //printf("Queue failed\n");
+  }
+}
+
+void min_tx_start(uint8_t _port)
+{
+
+}
+
+void min_tx_finished(uint8_t _port)
+{
+
+}
+
+#endif
 
 /* USER CODE END 0 */
 
@@ -87,16 +134,36 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-
+  //initialise_monitor_handles();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t buf[MAIN_BUF_SIZE];
+  unsigned int toggle_count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if (toggle_count % 100000 == 0)
+    {
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    }
+#ifndef NO_MIN
+    uint8_t small_buf[SMALL_BUF_SIZE];
+    int buf_len = l_circus_vcp_recv(small_buf, SMALL_BUF_SIZE);
+    //printf("buf_len: %d\n", buf_len);
+
+    min_poll(&min_ctx, (uint8_t *)buf, (uint8_t)buf_len);
+#else
+    // VCP demonstration - Echo all data received over VCP  back to the host
+    int len = l_circus_vcp_recv(buf, MAIN_BUF_SIZE);  // Read up to 1000 bytes
+    if (len > 0)    // If some data was read, send it back :
+      len = l_circus_vcp_send(buf, len);
+#endif
+
+    toggle_count++;
   }
   /* USER CODE END 3 */
 }
@@ -159,10 +226,9 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
