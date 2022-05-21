@@ -150,7 +150,11 @@ USBD_CDC_ItfTypeDef USBD_Interface_fops_FS =
 static int8_t CDC_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
+#ifdef NO_MIN
   v_circus_cdc_init_fs();
+#else
+  min_init_context(&min_ctx, 0);
+#endif
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
@@ -260,8 +264,11 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+#ifdef NO_MIN
   uint8_t* step = pc_circus_cdc_receive_fs(Buf, Len);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, step);
+#else
+#endif
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
   /* USER CODE END 6 */

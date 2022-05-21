@@ -65,14 +65,13 @@ void initialise_monitor_handles(void);
 // inside MIN to decide whether to bother sending a frame or not.
 uint16_t min_tx_space(uint8_t _port)
 {
-  uint16_t n = l_circus_vcp_send_available();
-  return n;
+  return 0;
 }
 
 // Send a character on the designated port.
 void min_tx_byte(uint8_t _port, uint8_t byte)
 {
-  l_circus_vcp_send(&byte, 1U);
+
 }
 
 // Tell MIN the current time in milliseconds.
@@ -150,17 +149,12 @@ int main(void)
     {
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     }
-#ifndef NO_MIN
-    uint8_t small_buf[SMALL_BUF_SIZE];
-    int buf_len = l_circus_vcp_recv(small_buf, SMALL_BUF_SIZE);
-    //printf("buf_len: %d\n", buf_len);
-
-    min_poll(&min_ctx, (uint8_t *)buf, (uint8_t)buf_len);
-#else
+#ifdef NO_MIN
     // VCP demonstration - Echo all data received over VCP  back to the host
     int len = l_circus_vcp_recv(buf, MAIN_BUF_SIZE);  // Read up to MAIN_BUF_SIZE bytes
     if (len > 0)    // If some data was read, send it back :
       len = l_circus_vcp_send(buf, len);
+#else
 #endif
 
     toggle_count++;
