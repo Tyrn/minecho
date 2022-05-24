@@ -22,6 +22,7 @@ void v_circus_vcp_service();
 #ifndef NO_MIN
   #include "min.h"
   extern struct min_context min_ctx;
+  #define MIN_PROTOCOL_BUF_SIZE 32U
 #endif
 
 #endif /* _CIRCUS_H */

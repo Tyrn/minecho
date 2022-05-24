@@ -33,8 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAIN_BUF_SIZE 1000
-#define SMALL_BUF_SIZE 32
+#define CIRCUS_BUF_SIZE 1000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,13 +64,19 @@ void initialise_monitor_handles(void);
 // inside MIN to decide whether to bother sending a frame or not.
 uint16_t min_tx_space(uint8_t _port)
 {
-  return 0;
+  uint16_t n = l_circus_vcp_send_available();
+
+  return n;
 }
 
 // Send a character on the designated port.
 void min_tx_byte(uint8_t _port, uint8_t byte)
 {
-
+  int n;
+  do {
+    n = l_circus_vcp_send(&byte, 1U);
+  }
+  while(n == 0);
 }
 
 // Tell MIN the current time in milliseconds.
@@ -138,7 +143,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t buf[MAIN_BUF_SIZE];
+  uint8_t buf[CIRCUS_BUF_SIZE];
   unsigned int toggle_count = 0;
   while (1)
   {
@@ -149,13 +154,10 @@ int main(void)
     {
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     }
-#ifdef NO_MIN
     // VCP demonstration - Echo all data received over VCP  back to the host
-    int len = l_circus_vcp_recv(buf, MAIN_BUF_SIZE);  // Read up to MAIN_BUF_SIZE bytes
+    int len = l_circus_vcp_recv(buf, CIRCUS_BUF_SIZE);  // Read up to MAIN_BUF_SIZE bytes
     if (len > 0)    // If some data was read, send it back :
       len = l_circus_vcp_send(buf, len);
-#else
-#endif
 
     toggle_count++;
   }

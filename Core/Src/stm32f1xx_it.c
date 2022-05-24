@@ -189,10 +189,11 @@ void SysTick_Handler(void)
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
   // USB VCP library : background processing of data transmission
-#ifdef NO_MIN
   v_circus_vcp_service();
-#else
-  min_poll(&min_ctx, NULL, 0); // (&min_ctx, (uint8_t *)buf, (uint8_t)buf_len)
+#ifndef NO_MIN
+  uint8_t min_buf[MIN_PROTOCOL_BUF_SIZE];
+  size_t buf_len = l_circus_vcp_recv(min_buf, MIN_PROTOCOL_BUF_SIZE);
+  min_poll(&min_ctx, min_buf, (uint8_t)buf_len); // (&min_ctx, (uint8_t *)buf, (uint8_t)buf_len)
 #endif
   /* USER CODE END SysTick_IRQn 1 */
 }
