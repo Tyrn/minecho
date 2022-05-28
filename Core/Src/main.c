@@ -88,10 +88,14 @@ uint32_t min_time_ms(void)
 void min_application_handler(uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
 {
   // In this simple example application we just echo the frame back when we get one
+#if TRANSPORT_PROTOCOL
   bool result = min_queue_frame(&min_ctx, min_id, min_payload, len_payload);
   if(!result) {
     //printf("Queue failed\n");
   }
+#else
+  min_send_frame(&min_ctx, min_id, min_payload, len_payload);
+#endif
 }
 
 void min_tx_start(uint8_t _port)

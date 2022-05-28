@@ -67,6 +67,7 @@
 #include <assert.h>
 #endif
 
+#define NO_TRANSPORT_PROTOCOL
 #ifndef NO_TRANSPORT_PROTOCOL
 #define TRANSPORT_PROTOCOL
 #endif
